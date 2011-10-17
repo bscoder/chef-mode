@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: package
+# --
+package "$1" do
+  action ${0::install}
+end

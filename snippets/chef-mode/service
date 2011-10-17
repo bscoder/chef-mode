@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: service
+# --
+service "$1" do
+  supports :status => true, :restart => true
+  action [:enable, :start]$0
+end

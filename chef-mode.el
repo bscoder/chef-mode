@@ -70,6 +70,24 @@
 (defvar chef-mode-map (make-sparse-keymap)
   "Key map for chef-mode")
 
+(defvar chef-snippet-directory (concat (file-name-directory load-file-name) "snippets")
+  "Chef snippets directory")
+
+(defvar chef-mode-hook nil
+  "Hook for chef-mode.")
+
+(declare-function yas/load-directory "yasnippet" t)
+(when (and (featurep 'yasnippet)
+           chef-snippet-directory
+           (file-exists-p chef-snippet-directory))
+  (setq yas/mode-symbol 'chef-mode)
+  (yas/load-directory chef-snippet-directory))
+
+(add-hook 'chef-mode-hook
+          '(lambda ()
+             (make-local-variable 'yas/mode-symbol)
+             (setq yas/mode-symbol 'chef-mode)))
+
 (define-key chef-mode-map (kbd "\C-c \C-k") 'knife)
 (define-key chef-mode-map (kbd "\C-c \C-c") 'chef-knife-dwim)
 
