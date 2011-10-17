@@ -75,7 +75,7 @@
 
 (define-minor-mode chef-mode
   "Mode for interacting with Opscode Chef"
-  nil chef-mode-map)
+  :lighter " chef" :keymap chef-mode-map)
 
 (defun turn-on-chef-mode ()
   "Enable chef-mode."
@@ -87,7 +87,7 @@
 (defun find-chef-root (&optional path)
   (when (null path)
     (setq path (or buffer-file-name
-                   default-directory)))  
+                   default-directory)))
   (cond
    ((not (file-directory-p path))
     (find-chef-root (concat (file-name-as-directory path) "..")))
