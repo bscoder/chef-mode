@@ -75,7 +75,11 @@
 
 (define-minor-mode chef-mode
   "Mode for interacting with Opscode Chef"
-  nil chef-mode-map)
+  :lighter " Chef" :keymap chef-mode-map
+
+  (add-hook 'before-save-hook 'chef-mode-maybe-update-metadata-version
+            nil t) )
+
 
 (defun turn-on-chef-mode ()
   "Enable chef-mode."
@@ -230,6 +234,46 @@ Guesses whether you have "
       (browse-url (concat base anchor (cdr target)))
     (browse-url base))))
 
+(defun chef-mode-maybe-update-metadata-version ()
+  "Check the current file being saved to see if we should toggle the metadata version number"
+  (if (not (equal "metadata.rb" (file-name-nondirectory (buffer-file-name))))
+      (progn
+        (let ((metadata-file (chef-mode-discover-metadata-rbfile)))
+          (if (and metadata-file (file-readable-p metadata-file))
+              (progn (message "going to edit file %s" metadata-file)
+                     (chef-mode-update-metadata-version metadata-file))
+            (message "Could not find a valid metadata file for %s" (buffer-file-name))
+            ))))
+  (message "Will not edit metadata.rb directly to prevent loop : %s" (file-name-nondirectory (buffer-file-name))))
+
+(defun chef-mode-update-metadata-version (metadata-file)
+  "Update the metadata version number for the current file's cookbook"
+  (save-excursion
+    (find-file metadata-file)
+    (goto-char (point-min))
+    (if (re-search-forward " *version *[\"']\\([0-9]+.?[0-9]*.?[0-9]*\\)[\"']")
+      (let* ((beg (match-beginning 1))
+             (end (match-end 1))
+             (version (match-string-no-properties 1))
+             (splitversion (split-string version "\\." t))
+             (incrnum (string-to-number (car (last splitversion))))
+             (keep (reverse (cdr (reverse splitversion))))
+             (newversion (append keep (list(number-to-string (1+ incrnum))))))
+        (delete-region beg end)
+        (backward-char)
+        (insert (mapconcat 'identity newversion "."))
+        (save-buffer 0)
+    ))
+    ;;(kill-buffer (current-buffer))
+    ))
+
+(defun chef-mode-discover-metadata-rbfile ()
+  "Try to find the relevant metadata file for the current file"
+  (message "Buffer-file-name is %s" (buffer-file-name))
+  (cond
+   ((and (buffer-file-name) (string-match "\\(.*/cookbooks/[^/]+/\\).*" buffer-file-name))
+    (concat (match-string-no-properties 1 buffer-file-name) "metadata.rb"))
+    (t nil)))
 
 (provide 'chef-mode)
 ;;; chef-mode.el ends here
