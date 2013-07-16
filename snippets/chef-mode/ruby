@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: ruby_block
+# --
+ruby_block "$1" do
+  block do
+    $0
+  end
+end
