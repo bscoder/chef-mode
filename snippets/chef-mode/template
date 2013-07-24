@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: template
+# --
+template "$1" do
+  source "$0"
+  mode ${2:0644}
+  owner '${3:root}'
+  group '${4:root}'
+end
